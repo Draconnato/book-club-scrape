@@ -1,8 +1,14 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup, NavigableString
-from pprint import pprint
 
+import time
+
+"""
+Problem to be solve in the future:
+The statements to run or quit the browser are inside of a function that shouldn't have this functionality, find a way to create a sub function or 
+understand if this are a typical usecase from class
+"""
 
 URL = "https://books.toscrape.com/"
 
@@ -10,7 +16,9 @@ chromeOptions = Options()
 
 chromeOptions.add_argument("--headless")
 
-driver = webdriver.Chrome(options=chromeOptions)
+#driver = webdriver.Chrome(options=chromeOptions)
+driver = webdriver.Chrome()
+
 
 driver.implicitly_wait(10)
 
@@ -22,7 +30,7 @@ def getSourcePage(url):
 
     return source
     
-#page = getSourcePage(url=URL)
+page = getSourcePage(url=URL)
 
 def getCategoryList(pageHtml):
 
@@ -40,6 +48,16 @@ def getCategoryList(pageHtml):
                     for newChildrenList in childrenList.find_all('li'):
                         categoryList.update({newChildrenList.a.text.strip():newChildrenList.a['href'].strip()})
     
-    driver.quit
+    #driver.quit
 
     return categoryList
+
+categoryURL = getCategoryList(page)
+
+for i in categoryURL:
+
+    currentCategoryURL = categoryURL[i]
+
+    driver.get(URL+currentCategoryURL)  
+
+    time.sleep(3)   
