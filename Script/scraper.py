@@ -42,7 +42,9 @@ def getCategoryList(pageHtml):
             else:
                 for childrenList in list.find_all('ul'):
                     for newChildrenList in childrenList.find_all('li'):
-                        categoryList.update({newChildrenList.a.text.strip():newChildrenList.a['href'].strip()})
+                        category = newChildrenList.a.text.strip()
+                        link = newChildrenList.a['href'].strip()[:-10]
+                        categoryList.update({category:link})
 
     return categoryList
 
@@ -72,12 +74,34 @@ def getBookData(pageContent):
 
             books.append(bookContent)
 
-    return json.dumps(books,ensure_ascii=False) # ensure_ascii=False Fix the currency code
+    return books#json.dumps(books,ensure_ascii=False)# ensure_ascii=False Fix the currency code
 
 def hasNextPage(pageContent):
 
     soup = BeautifulSoup(pageContent,'html.parser')
     
-    nextButton = len(soup.find_all('li',class_='next'))
+    nextButton = soup.find_all('li',class_='next')
+
+    if len(nextButton) > 0:
+        nextButton = nextButton[0].a['href']
 
     return nextButton
+
+def scrapePage(chrome,URL):
+
+    sourcePage = getSourcePage(chrome,URL)
+
+    nextPage = hasNextPage(sourcePage)
+
+    bookData = getBookData(sourcePage)
+
+    while len(nextPage) > 0:
+
+        sourcePage = getSourcePage(chrome,URL+nextPage)
+
+        nextPage = hasNextPage(sourcePage)
+
+        bookData.extend(getBookData(sourcePage))
+
+    return bookData#json.dumps(bookData)
+        
